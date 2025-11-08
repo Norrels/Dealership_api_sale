@@ -6,4 +6,5 @@ export interface Vehicle {
   vin: string;
   price: string;
   color: string;
+  status: "available" | "sold";
 }
