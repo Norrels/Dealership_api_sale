@@ -1,14 +1,14 @@
 import { VehicleRepositoryPort } from "../../domain/ports/out/vehicleRepositoryPort";
-import { Vehicle } from "../../domain/models/vehicle";
+import { Vehicle, VehicleResponse } from "../../domain/models/vehicle";
 import { logger } from "../../config/logger";
 
 export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
-  private cache: Map<string, Vehicle> = new Map();
+  private cache: Map<string, VehicleResponse> = new Map();
   private cacheTimestamp: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000;
   private readonly API_URL = "http://localhost:3000/vehicles?isSold=false";
 
-  async getAllAvailableVehicles(): Promise<Vehicle[]> {
+  async getAllAvailableVehicles(): Promise<VehicleResponse[]> {
     const now = Date.now();
 
     if (this.cache.size > 0 && now - this.cacheTimestamp < this.CACHE_TTL) {
@@ -23,7 +23,7 @@ export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
     return Array.from(this.cache.values());
   }
 
-  async getVehicleById(id: string): Promise<Vehicle | undefined> {
+  async getVehicleById(id: string): Promise<VehicleResponse | undefined> {
     logger.info(
       { vehicleId: id },
       "Buscando veículo da API para evitar conflitos"
@@ -40,7 +40,7 @@ export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const vehicle: Vehicle = await response.json();
+      const vehicle: VehicleResponse = await response.json();
       logger.info({ vehicleId: id }, "Veículo encontrado na API");
 
       return vehicle;
@@ -59,7 +59,7 @@ export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const vehicles: Vehicle[] = await response.json();
+      const vehicles: VehicleResponse[] = await response.json();
 
       this.cache.clear();
       vehicles.forEach((vehicle) => {
