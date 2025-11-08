@@ -13,7 +13,7 @@ export class SaleService {
     private vehicleRepository: VehicleRepositoryPort
   ) {}
 
-  async createSale(createSaleDTO: CreateSaleInput): Promise<Sale> {
+  async createSale(createSaleDTO: CreateSaleInput): Promise<void> {
     logger.info(
       { vehicleId: createSaleDTO.vehicleId },
       "Iniciando criação de venda"
@@ -68,17 +68,12 @@ export class SaleService {
       price: createSaleDTO.salePrice,
     };
 
-    const newSale = await this.saleRepository.createSale(sale);
+    await this.saleRepository.createSale(sale);
 
-    logger.info(
-      { saleId: newSale.id, vehicleId: vehicle.id },
-      "Venda criada com sucesso"
-    );
-
-    return newSale;
+    logger.info("Venda criada com sucesso");
   }
 
-  async getAllVehiclesSold(): Promise<Omit<Vehicle, "status">[]> {
+  async getAllVehiclesSold(): Promise<Vehicle[]> {
     return await this.saleRepository.getAllVehicleSales();
   }
 }
