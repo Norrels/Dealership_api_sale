@@ -6,13 +6,16 @@ export class VehicleRepositoryAdapter implements VehicleRepository {
   private cache: Map<string, Vehicle> = new Map();
   private cacheTimestamp: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000;
-  private readonly API_URL = "http://localhost:3000/vehicles";
+  private readonly API_URL = "http://localhost:3000/vehicles?isSold=false";
 
   async getAllAvailableVehicles(): Promise<Vehicle[]> {
     const now = Date.now();
 
     if (this.cache.size > 0 && now - this.cacheTimestamp < this.CACHE_TTL) {
-      logger.info({ cacheSize: this.cache.size }, "Retornando veículos do cache local");
+      logger.info(
+        { cacheSize: this.cache.size },
+        "Retornando veículos do cache local"
+      );
       return Array.from(this.cache.values());
     }
 
