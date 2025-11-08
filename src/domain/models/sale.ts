@@ -1,3 +1,5 @@
+import { CPF } from "./cpf";
+
 export interface Sale {
   id: string;
   vehicleId: string;
@@ -9,4 +11,5 @@ export interface Sale {
   price: string;
   color: string;
   status: string;
+  buyerCPF: CPF;
 }
