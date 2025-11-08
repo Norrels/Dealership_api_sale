@@ -1,8 +1,8 @@
-import { VehicleRepository } from "../../domain/ports/out/vehicleRepositoryPort";
+import { VehicleRepositoryPort } from "../../domain/ports/out/vehicleRepositoryPort";
 import { Vehicle } from "../../domain/models/vehicle";
 import { logger } from "../../config/logger";
 
-export class VehicleRepositoryAdapter implements VehicleRepository {
+export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
   private cache: Map<string, Vehicle> = new Map();
   private cacheTimestamp: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000;
@@ -24,21 +24,30 @@ export class VehicleRepositoryAdapter implements VehicleRepository {
   }
 
   async getVehicleById(id: string): Promise<Vehicle | undefined> {
-    const now = Date.now();
+    logger.info(
+      { vehicleId: id },
+      "Buscando veículo da API para evitar conflitos"
+    );
 
-    if (this.cache.size === 0 || now - this.cacheTimestamp >= this.CACHE_TTL) {
-      await this.refreshCache();
+    try {
+      const response = await fetch(`http://localhost:3001/vehicles/${id}`);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          logger.warn({ vehicleId: id }, "Veículo não encontrado na API");
+          return undefined;
+        }
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const vehicle: Vehicle = await response.json();
+      logger.info({ vehicleId: id }, "Veículo encontrado na API");
+
+      return vehicle;
+    } catch (error) {
+      logger.error({ error, vehicleId: id }, "Erro ao buscar veículo da API");
+      throw error;
     }
-
-    const vehicle = this.cache.get(id);
-
-    if (vehicle) {
-      logger.info({ vehicleId: id }, "Veículo encontrado no cache");
-    } else {
-      logger.warn({ vehicleId: id }, "Veículo não encontrado no cache");
-    }
-
-    return vehicle;
   }
 
   async refreshCache(): Promise<void> {
