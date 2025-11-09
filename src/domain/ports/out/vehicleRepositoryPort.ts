@@ -1,5 +1,7 @@
-import { Vehicle } from "../../models/vehicle";
+import { Vehicle, VehicleResponse } from "../../models/vehicle";
 
-export interface VehicleRepository {
-  getAllAvailableVehicles(): Promise<Vehicle[]>;
+export interface VehicleRepositoryPort {
+  getAllAvailableVehicles(): Promise<VehicleResponse[]>;
+  getVehicleById(id: string): Promise<VehicleResponse | undefined>;
+  refreshCache(): Promise<void>;
 }

@@ -21,5 +21,5 @@ export const saleSchema = pgTable("sale_table", {
   vin: varchar().notNull(),
   color: varchar().notNull(),
   saleDate: timestamp("sale_date").notNull().defaultNow(),
-  salePrice: numeric("sale_price", { precision: 10, scale: 2 }).notNull(),
+  price: numeric("sale_price", { precision: 10, scale: 2 }).notNull(),
 });

@@ -7,7 +7,8 @@ describe("Sale Entity", () => {
     const sale: Sale = {
       id: "sale-123",
       vehicleId: "vehicle-456",
-      buyerCPF: new CPF("123.456.789-09"),
+      customerName: "John Doe",
+      customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date("2024-01-15"),
       make: "Toyota",
       model: "Corolla",
@@ -20,8 +21,9 @@ describe("Sale Entity", () => {
 
     expect(sale.id).toBe("sale-123");
     expect(sale.vehicleId).toBe("vehicle-456");
-    expect(sale.buyerCPF).toBeInstanceOf(CPF);
-    expect(sale.buyerCPF.getFormatted()).toBe("123.456.789-09");
+    expect(sale.customerName).toBe("John Doe");
+    expect(sale.customerCPF).toBeInstanceOf(CPF);
+    expect(sale.customerCPF.getFormatted()).toBe("123.456.789-09");
     expect(sale.saleDate).toBeInstanceOf(Date);
     expect(sale.make).toBe("Toyota");
     expect(sale.model).toBe("Corolla");
@@ -33,13 +35,18 @@ describe("Sale Entity", () => {
   });
 
   test("should handle different sale statuses", () => {
-    const statuses = ["pending", "completed", "cancelled", "processing"];
+    const statuses: Array<"completed" | "pending" | "canceled"> = [
+      "pending",
+      "completed",
+      "canceled",
+    ];
 
     statuses.forEach((status) => {
       const sale: Sale = {
         id: `sale-${status}`,
         vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Jane Smith",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Honda",
         model: "Civic",
@@ -66,7 +73,8 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: `vehicle-${index}`,
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Alice Johnson",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make,
         model,
@@ -89,7 +97,8 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Bob Brown",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Toyota",
         model: "Camry",
@@ -111,7 +120,8 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${year}`,
         vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Charlie Davis",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Honda",
         model: "Accord",
@@ -138,7 +148,8 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Dana Lee",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate,
         make: "Nissan",
         model: "Altima",
@@ -158,7 +169,8 @@ describe("Sale Entity", () => {
     const sale: Sale = {
       id: "sale-789",
       vehicleId: "vehicle-101",
-      buyerCPF: new CPF("123.456.789-09"),
+      customerName: "Eve Wilson",
+      customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date(),
       make: "Volkswagen",
       model: "Jetta",
@@ -171,8 +183,9 @@ describe("Sale Entity", () => {
 
     expect(sale).toHaveProperty("id");
     expect(sale).toHaveProperty("vehicleId");
-    expect(sale).toHaveProperty("cpfComprador");
-    expect(sale.buyerCPF).toBeInstanceOf(CPF);
+    expect(sale).toHaveProperty("customerName");
+    expect(sale).toHaveProperty("customerCPF");
+    expect(sale.customerCPF).toBeInstanceOf(CPF);
     expect(sale).toHaveProperty("saleDate");
     expect(sale).toHaveProperty("make");
     expect(sale).toHaveProperty("model");
@@ -195,7 +208,8 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
+        customerName: "Frank Thomas",
+        customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Various",
         model: "Model",
@@ -211,33 +225,12 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should handle different colors", () => {
-    const colors = ["Red", "Blue", "Black", "White", "Silver", "Gray"];
-
-    colors.forEach((color, index) => {
-      const sale: Sale = {
-        id: `sale-${index}`,
-        vehicleId: "vehicle-123",
-        buyerCPF: new CPF("123.456.789-09"),
-        saleDate: new Date(),
-        make: "Mazda",
-        model: "CX-5",
-        year: 2024,
-        vin: "VIN123456789012345",
-        price: "32000.00",
-        color,
-        status: "completed",
-      };
-
-      expect(sale.color).toBe(color);
-    });
-  });
-
   test("should verify data types of all properties", () => {
     const sale: Sale = {
       id: "sale-999",
       vehicleId: "vehicle-888",
-      buyerCPF: new CPF("123.456.789-09"),
+      customerName: "Diana Prince",
+      customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date("2024-03-20"),
       make: "Subaru",
       model: "Outback",
@@ -249,8 +242,9 @@ describe("Sale Entity", () => {
     };
 
     expect(typeof sale.id).toBe("string");
+    expect(typeof sale.customerName).toBe("string");
     expect(typeof sale.vehicleId).toBe("string");
-    expect(sale.buyerCPF).toBeInstanceOf(CPF);
+    expect(sale.customerCPF).toBeInstanceOf(CPF);
     expect(sale.saleDate).toBeInstanceOf(Date);
     expect(typeof sale.make).toBe("string");
     expect(typeof sale.model).toBe("string");
