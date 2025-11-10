@@ -1,9 +1,9 @@
 import { WebhookPort } from "../../domain/ports/out/webhookPort";
 import { logger } from "../../config/logger";
+import { config } from "../../config/env";
 
 export class WebhookAdapter implements WebhookPort {
-  private readonly WEBHOOK_URL =
-    process.env.WEBHOOK_URL || "http://localhost:3000/vehicles/webhook";
+  private readonly WEBHOOK_URL = config.WEBHOOK_URL;
 
   async notifyVehicleStatusChange(
     vehicleId: string,
@@ -32,10 +32,7 @@ export class WebhookAdapter implements WebhookPort {
         );
       }
 
-      logger.info(
-        { vehicleId, status },
-        "Webhook notificado com sucesso"
-      );
+      logger.info({ vehicleId, status }, "Webhook notificado com sucesso");
     } catch (error) {
       logger.error(
         { error, vehicleId, status },
