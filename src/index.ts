@@ -1,6 +1,7 @@
 import { Elysia } from "elysia";
 import { VehicleService } from "./application/service/vehicleService";
 import { VehicleRepositoryAdapter } from "./infrastructure/adapters/vehicleRepositoryAdapter";
+import { WebhookAdapter } from "./infrastructure/adapters/webhookAdapter";
 import { logger } from "./config/logger";
 import { CreateSaleDTO } from "./application/dto/saleDTO";
 import { SaleRepositoryAdapter } from "./infrastructure/adapters/saleRepositoryAdapter";
@@ -11,7 +12,12 @@ const vehicleRepository = new VehicleRepositoryAdapter();
 const vehicleService = new VehicleService(vehicleRepository);
 
 const saleRepository = new SaleRepositoryAdapter();
-const saleService = new SaleService(saleRepository, vehicleRepository);
+const webhookAdapter = new WebhookAdapter();
+const saleService = new SaleService(
+  saleRepository,
+  vehicleRepository,
+  webhookAdapter
+);
 
 const app = new Elysia({ prefix: "/api/v1/sales" })
   .use(openapiConfig)
