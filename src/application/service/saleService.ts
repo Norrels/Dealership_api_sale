@@ -1,5 +1,6 @@
 import { SaleRepository } from "../../domain/ports/out/saleRepositoryPort";
 import { VehicleRepositoryPort } from "../../domain/ports/out/vehicleRepositoryPort";
+import { WebhookPort } from "../../domain/ports/out/webhookPort";
 import { Sale } from "../../domain/models/sale";
 import { CreateSaleInput } from "../dto/saleDTO";
 import { CPF } from "../../domain/models/cpf";
@@ -10,7 +11,8 @@ import { Vehicle } from "../../domain/models/vehicle";
 export class SaleService {
   constructor(
     private saleRepository: SaleRepository,
-    private vehicleRepository: VehicleRepositoryPort
+    private vehicleRepository: VehicleRepositoryPort,
+    private webhookPort: WebhookPort
   ) {}
 
   async createSale(createSaleDTO: CreateSaleInput): Promise<void> {
@@ -53,6 +55,15 @@ export class SaleService {
       throw new Error("Veículo não está disponível para venda");
     }
 
+    const existingSale = await this.saleRepository.findSaleByVin(vehicle.vin);
+    if (existingSale) {
+      logger.warn(
+        { vin: vehicle.vin, vehicleId: vehicle.id, existingSaleId: existingSale.id },
+        "Veículo já possui uma venda registrada"
+      );
+      throw new Error("Este veículo já foi vendido anteriormente");
+    }
+
     const sale: Sale = {
       id: createId(),
       vehicleId: vehicle.id,
@@ -71,6 +82,8 @@ export class SaleService {
     await this.saleRepository.createSale(sale);
 
     logger.info("Venda criada com sucesso");
+
+    await this.webhookPort.notifyVehicleStatusChange(vehicle.id, "sold");
   }
 
   async getAllVehiclesSold(): Promise<Vehicle[]> {

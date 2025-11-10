@@ -3,11 +3,11 @@ import { Sale } from "./sale";
 import { CPF } from "./cpf";
 
 describe("Sale Entity", () => {
-  test("should create a valid sale object", () => {
+  test("deve criar um objeto de venda válido", () => {
     const sale: Sale = {
       id: "sale-123",
       vehicleId: "vehicle-456",
-      customerName: "John Doe",
+      customerName: "João da Silva",
       customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date("2024-01-15"),
       make: "Toyota",
@@ -15,13 +15,13 @@ describe("Sale Entity", () => {
       year: 2023,
       vin: "1HGBH41JXMN109186",
       price: "25000.00",
-      color: "Silver",
+      color: "Prata",
       status: "completed",
     };
 
     expect(sale.id).toBe("sale-123");
     expect(sale.vehicleId).toBe("vehicle-456");
-    expect(sale.customerName).toBe("John Doe");
+    expect(sale.customerName).toBe("João da Silva");
     expect(sale.customerCPF).toBeInstanceOf(CPF);
     expect(sale.customerCPF.getFormatted()).toBe("123.456.789-09");
     expect(sale.saleDate).toBeInstanceOf(Date);
@@ -30,11 +30,11 @@ describe("Sale Entity", () => {
     expect(sale.year).toBe(2023);
     expect(sale.vin).toBe("1HGBH41JXMN109186");
     expect(sale.price).toBe("25000.00");
-    expect(sale.color).toBe("Silver");
+    expect(sale.color).toBe("Prata");
     expect(sale.status).toBe("completed");
   });
 
-  test("should handle different sale statuses", () => {
+  test("deve lidar com diferentes status de venda", () => {
     const statuses: Array<"completed" | "pending" | "canceled"> = [
       "pending",
       "completed",
@@ -45,7 +45,7 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${status}`,
         vehicleId: "vehicle-123",
-        customerName: "Jane Smith",
+        customerName: "Maria Santos",
         customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Honda",
@@ -53,7 +53,7 @@ describe("Sale Entity", () => {
         year: 2024,
         vin: "1HGBH41JXMN109186",
         price: "30000.00",
-        color: "Blue",
+        color: "Azul",
         status,
       };
 
@@ -61,7 +61,7 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should handle different vehicle makes and models", () => {
+  test("deve lidar com diferentes marcas e modelos de veículos", () => {
     const vehicles = [
       { make: "Ford", model: "Mustang" },
       { make: "Chevrolet", model: "Camaro" },
@@ -73,7 +73,7 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: `vehicle-${index}`,
-        customerName: "Alice Johnson",
+        customerName: "Ana Oliveira",
         customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make,
@@ -81,7 +81,7 @@ describe("Sale Entity", () => {
         year: 2024,
         vin: `VIN${index}`,
         price: "50000.00",
-        color: "Black",
+        color: "Preto",
         status: "completed",
       };
 
@@ -90,14 +90,14 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should handle different price formats", () => {
+  test("deve lidar com diferentes formatos de preço", () => {
     const prices = ["10000.00", "25000.50", "99999.99", "0.00"];
 
     prices.forEach((price, index) => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        customerName: "Bob Brown",
+        customerName: "Roberto Costa",
         customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Toyota",
@@ -105,7 +105,7 @@ describe("Sale Entity", () => {
         year: 2024,
         vin: "VIN123",
         price,
-        color: "White",
+        color: "Branco",
         status: "completed",
       };
 
@@ -113,14 +113,14 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should handle different vehicle years", () => {
+  test("deve lidar com diferentes anos de veículos", () => {
     const years = [2020, 2021, 2022, 2023, 2024];
 
     years.forEach((year) => {
       const sale: Sale = {
         id: `sale-${year}`,
         vehicleId: "vehicle-123",
-        customerName: "Charlie Davis",
+        customerName: "Carlos Pereira",
         customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
         make: "Honda",
@@ -128,7 +128,7 @@ describe("Sale Entity", () => {
         year,
         vin: "VIN123",
         price: "28000.00",
-        color: "Red",
+        color: "Vermelho",
         status: "completed",
       };
 
@@ -137,7 +137,7 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should handle different sale dates", () => {
+  test("deve lidar com diferentes datas de venda", () => {
     const dates = [
       new Date("2024-01-01"),
       new Date("2024-06-15"),
@@ -148,7 +148,7 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        customerName: "Dana Lee",
+        customerName: "Daniela Lima",
         customerCPF: new CPF("123.456.789-09"),
         saleDate,
         make: "Nissan",
@@ -156,7 +156,7 @@ describe("Sale Entity", () => {
         year: 2024,
         vin: "VIN123",
         price: "27000.00",
-        color: "Gray",
+        color: "Cinza",
         status: "completed",
       };
 
@@ -165,11 +165,11 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should have all required properties", () => {
+  test("deve ter todas as propriedades obrigatórias", () => {
     const sale: Sale = {
       id: "sale-789",
       vehicleId: "vehicle-101",
-      customerName: "Eve Wilson",
+      customerName: "Eduardo Silva",
       customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date(),
       make: "Volkswagen",
@@ -177,7 +177,7 @@ describe("Sale Entity", () => {
       year: 2024,
       vin: "3VW2B7AJ5KM123456",
       price: "22000.00",
-      color: "Green",
+      color: "Verde",
       status: "pending",
     };
 
@@ -196,7 +196,7 @@ describe("Sale Entity", () => {
     expect(sale).toHaveProperty("status");
   });
 
-  test("should handle VIN format", () => {
+  test("deve lidar com formato VIN", () => {
     const vins = [
       "1HGBH41JXMN109186",
       "3VW2B7AJ5KM123456",
@@ -208,15 +208,15 @@ describe("Sale Entity", () => {
       const sale: Sale = {
         id: `sale-${index}`,
         vehicleId: "vehicle-123",
-        customerName: "Frank Thomas",
+        customerName: "Fernando Souza",
         customerCPF: new CPF("123.456.789-09"),
         saleDate: new Date(),
-        make: "Various",
-        model: "Model",
+        make: "Diversos",
+        model: "Modelo",
         year: 2024,
         vin,
         price: "35000.00",
-        color: "Blue",
+        color: "Azul",
         status: "completed",
       };
 
@@ -225,11 +225,11 @@ describe("Sale Entity", () => {
     });
   });
 
-  test("should verify data types of all properties", () => {
+  test("deve verificar tipos de dados de todas as propriedades", () => {
     const sale: Sale = {
       id: "sale-999",
       vehicleId: "vehicle-888",
-      customerName: "Diana Prince",
+      customerName: "Gabriela Martins",
       customerCPF: new CPF("123.456.789-09"),
       saleDate: new Date("2024-03-20"),
       make: "Subaru",
@@ -237,7 +237,7 @@ describe("Sale Entity", () => {
       year: 2024,
       vin: "JF2SJABC5LH123456",
       price: "38000.00",
-      color: "Navy Blue",
+      color: "Azul Marinho",
       status: "completed",
     };
 

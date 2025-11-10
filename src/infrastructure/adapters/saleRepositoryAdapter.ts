@@ -1,9 +1,10 @@
-import { CreateSaleInput } from "../../application/dto/saleDTO";
 import { Sale } from "../../domain/models/sale";
+import { CPF } from "../../domain/models/cpf";
 import { Vehicle } from "../../domain/models/vehicle";
 import { SaleRepository } from "../../domain/ports/out/saleRepositoryPort";
 import { db } from "../database";
 import { saleSchema } from "../database/schemas/sale";
+import { eq } from "drizzle-orm";
 
 export class SaleRepositoryAdapter implements SaleRepository {
   async createSale(saleData: Sale): Promise<void> {
@@ -28,5 +29,33 @@ export class SaleRepositoryAdapter implements SaleRepository {
         price: saleSchema.price,
       })
       .from(saleSchema);
+  }
+
+  async findSaleByVin(vin: string): Promise<Sale | undefined> {
+    const results = await db
+      .select()
+      .from(saleSchema)
+      .where(eq(saleSchema.vin, vin))
+      .limit(1);
+
+    if (results.length === 0) {
+      return undefined;
+    }
+
+    const row = results[0];
+    return {
+      id: row.id,
+      vehicleId: row.vehicleId,
+      customerName: row.customerName,
+      customerCPF: new CPF(row.customerCPF),
+      make: row.make,
+      model: row.model,
+      year: row.year,
+      vin: row.vin,
+      color: row.color,
+      saleDate: row.saleDate,
+      price: row.price.toString(),
+      status: "completed",
+    };
   }
 }
