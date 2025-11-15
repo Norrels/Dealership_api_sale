@@ -7,7 +7,7 @@ export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
   private cache: Map<string, VehicleResponse> = new Map();
   private cacheTimestamp: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000;
-  private readonly API_URL = config.VEHICLE_SERVICE_URL + "?isSold=false";
+  private readonly API_URL = config.VEHICLE_SERVICE_URL + "?status=available";
 
   async getAllAvailableVehicles(): Promise<VehicleResponse[]> {
     const now = Date.now();
