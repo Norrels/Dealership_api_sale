@@ -74,7 +74,7 @@ describe("SaleService - Integration Tests", () => {
 
       await saleService.createSale(createSaleInput);
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(1);
       expect(sales[0].make).toBe("Toyota");
       expect(sales[0].model).toBe("Corolla");
@@ -111,7 +111,7 @@ describe("SaleService - Integration Tests", () => {
         "Veículo não está disponível para venda"
       );
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(0);
     });
 
@@ -132,7 +132,7 @@ describe("SaleService - Integration Tests", () => {
         "Veículo não encontrado"
       );
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(0);
     });
 
@@ -167,7 +167,7 @@ describe("SaleService - Integration Tests", () => {
         "CPF inválido"
       );
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(0);
     });
 
@@ -216,7 +216,7 @@ describe("SaleService - Integration Tests", () => {
         "Este veículo já foi vendido anteriormente"
       );
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(1);
       expect(sales[0].make).toBe("Chevrolet");
     });
@@ -282,7 +282,7 @@ describe("SaleService - Integration Tests", () => {
         await saleService.createSale(createSaleInput);
       }
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(3);
       expect(sales.map((s) => s.make)).toContain("BMW");
       expect(sales.map((s) => s.make)).toContain("Audi");
@@ -332,7 +332,7 @@ describe("SaleService - Integration Tests", () => {
 
         await saleService.createSale(createSaleInput);
 
-        const sales = await saleRepository.getAllVehicleSales();
+        const sales = await saleRepository.getAllSales();
         expect(sales).toHaveLength(1);
       }
     });
@@ -394,6 +394,15 @@ describe("SaleService - Integration Tests", () => {
       await saleService.createSale(sale1);
       await saleService.createSale(sale2);
 
+      // Buscar IDs das vendas criadas
+      const allSalesCreated = await saleRepository.getAllSales();
+      expect(allSalesCreated).toHaveLength(2);
+
+      // Processar pagamentos para marcar como completed
+      await saleService.processPayment(allSalesCreated[0].id, "approved");
+      await saleService.processPayment(allSalesCreated[1].id, "approved");
+
+      // Agora deve retornar apenas vendas completed
       const allSales = await saleService.getAllVehiclesSold();
       expect(allSales).toHaveLength(2);
       expect(allSales.find((s) => s.make === "Tesla")).toBeDefined();
@@ -450,7 +459,7 @@ describe("SaleService - Integration Tests", () => {
 
         await saleService.createSale(createSaleInput);
 
-        const sales = await saleRepository.getAllVehicleSales();
+        const sales = await saleRepository.getAllSales();
         expect(sales).toHaveLength(1);
         expect(sales[0].make).toBe("Chevrolet");
       }
@@ -470,11 +479,11 @@ describe("SaleService - Integration Tests", () => {
 
       expect(saleService.createSale(createSaleInput)).rejects.toThrow();
 
-      const sales = await saleRepository.getAllVehicleSales();
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(0);
     });
 
-    test("deve criar venda mesmo se webhook falhar", async () => {
+    test("deve criar venda com status pending e não chamar webhook imediatamente", async () => {
       let webhookCallCount = 0;
 
       global.fetch = (async (url: string) => {
@@ -509,12 +518,217 @@ describe("SaleService - Integration Tests", () => {
 
       await saleService.createSale(createSaleInput);
 
-      // Venda deve ter sido criada
-      const sales = await saleRepository.getAllVehicleSales();
+      // Venda deve ter sido criada com status pending
+      const sales = await saleRepository.getAllSales();
       expect(sales).toHaveLength(1);
       expect(sales[0].make).toBe("Hyundai");
 
-      expect(webhookCallCount).toBe(1);
+      // Webhook não deve ser chamado imediatamente
+      expect(webhookCallCount).toBe(0);
+
+      // Buscar venda criada para verificar status
+      const sale = await saleRepository.findSaleByVin("KMHD84LF3PU123456");
+      expect(sale).toBeDefined();
+      expect(sale?.status).toBe("pending");
+    });
+  });
+
+  describe("Busca de vendas por CPF", () => {
+    test("deve buscar vendas por CPF formatado", async () => {
+      global.fetch = (async (url: string) => {
+        if (url.includes("vehicle-cpf-1")) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: "vehicle-cpf-1",
+              make: "Toyota",
+              model: "Corolla",
+              year: 2024,
+              vin: "VIN-CPF-1",
+              price: "85000.00",
+              color: "Black",
+              status: "available",
+            }),
+          } as Response;
+        }
+        if (url.includes("vehicles/webhook")) {
+          return { ok: true } as Response;
+        }
+        return { ok: false, status: 404 } as Response;
+      }) as any;
+
+      const createSaleInput: CreateSaleInput = {
+        vehicleId: "vehicle-cpf-1",
+        customerName: "João Silva",
+        customerCPF: "123.456.789-09",
+        salePrice: "85000.00",
+      };
+
+      await saleService.createSale(createSaleInput);
+
+      const sales = await saleService.getSalesByCPF("123.456.789-09");
+
+      expect(sales).toHaveLength(1);
+      expect(sales[0].customerName).toBe("João Silva");
+      expect(sales[0].customerCPF.getFormatted()).toBe("123.456.789-09");
+      expect(sales[0].make).toBe("Toyota");
+    });
+
+    test("deve buscar vendas por CPF sem formatação", async () => {
+      global.fetch = (async (url: string) => {
+        if (url.includes("vehicle-cpf-2")) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: "vehicle-cpf-2",
+              make: "Honda",
+              model: "Civic",
+              year: 2024,
+              vin: "VIN-CPF-2",
+              price: "90000.00",
+              color: "White",
+              status: "available",
+            }),
+          } as Response;
+        }
+        if (url.includes("vehicles/webhook")) {
+          return { ok: true } as Response;
+        }
+        return { ok: false, status: 404 } as Response;
+      }) as any;
+
+      const createSaleInput: CreateSaleInput = {
+        vehicleId: "vehicle-cpf-2",
+        customerName: "Maria Santos",
+        customerCPF: "98765432100",
+        salePrice: "90000.00",
+      };
+
+      await saleService.createSale(createSaleInput);
+
+      const sales = await saleService.getSalesByCPF("98765432100");
+
+      expect(sales).toHaveLength(1);
+      expect(sales[0].customerName).toBe("Maria Santos");
+      expect(sales[0].make).toBe("Honda");
+    });
+
+    test("deve buscar múltiplas vendas do mesmo CPF", async () => {
+      global.fetch = (async (url: string) => {
+        if (url.includes("vehicle-multi-1")) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: "vehicle-multi-1",
+              make: "Ford",
+              model: "Mustang",
+              year: 2024,
+              vin: "VIN-MULTI-1",
+              price: "150000.00",
+              color: "Red",
+              status: "available",
+            }),
+          } as Response;
+        }
+        if (url.includes("vehicle-multi-2")) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: "vehicle-multi-2",
+              make: "Ford",
+              model: "F-150",
+              year: 2023,
+              vin: "VIN-MULTI-2",
+              price: "120000.00",
+              color: "Blue",
+              status: "available",
+            }),
+          } as Response;
+        }
+        if (url.includes("vehicles/webhook")) {
+          return { ok: true } as Response;
+        }
+        return { ok: false, status: 404 } as Response;
+      }) as any;
+
+      const sale1: CreateSaleInput = {
+        vehicleId: "vehicle-multi-1",
+        customerName: "Pedro Costa",
+        customerCPF: "123.456.789-09",
+        salePrice: "150000.00",
+      };
+
+      const sale2: CreateSaleInput = {
+        vehicleId: "vehicle-multi-2",
+        customerName: "Pedro Costa",
+        customerCPF: "123.456.789-09",
+        salePrice: "120000.00",
+      };
+
+      await saleService.createSale(sale1);
+      await saleService.createSale(sale2);
+
+      const sales = await saleService.getSalesByCPF("123.456.789-09");
+
+      expect(sales).toHaveLength(2);
+      expect(sales[0].customerName).toBe("Pedro Costa");
+      expect(sales[1].customerName).toBe("Pedro Costa");
+      expect(sales.find(s => s.make === "Ford" && s.model === "Mustang")).toBeDefined();
+      expect(sales.find(s => s.make === "Ford" && s.model === "F-150")).toBeDefined();
+    });
+
+    test("deve retornar array vazio quando CPF não tem vendas", async () => {
+      const sales = await saleService.getSalesByCPF("987.654.321-00");
+      expect(sales).toEqual([]);
+      expect(sales).toHaveLength(0);
+    });
+
+    test("deve lançar erro para CPF inválido", async () => {
+      expect(saleService.getSalesByCPF("123.456.789-00")).rejects.toThrow("CPF inválido");
+      expect(saleService.getSalesByCPF("000.000.000-00")).rejects.toThrow("CPF inválido");
+      expect(saleService.getSalesByCPF("invalid-cpf")).rejects.toThrow("CPF inválido");
+    });
+
+    test("deve normalizar CPF com formatação antes de buscar", async () => {
+      global.fetch = (async (url: string) => {
+        if (url.includes("vehicle-norm")) {
+          return {
+            ok: true,
+            json: async () => ({
+              id: "vehicle-norm",
+              make: "Tesla",
+              model: "Model 3",
+              year: 2024,
+              vin: "VIN-NORM",
+              price: "200000.00",
+              color: "White",
+              status: "available",
+            }),
+          } as Response;
+        }
+        if (url.includes("vehicles/webhook")) {
+          return { ok: true } as Response;
+        }
+        return { ok: false, status: 404 } as Response;
+      }) as any;
+
+      const createSaleInput: CreateSaleInput = {
+        vehicleId: "vehicle-norm",
+        customerName: "Ana Paula",
+        customerCPF: "111.444.777-35",
+        salePrice: "200000.00",
+      };
+
+      await saleService.createSale(createSaleInput);
+
+      // Buscar com formatação diferente
+      const salesWithDots = await saleService.getSalesByCPF("111.444.777-35");
+      const salesWithoutDots = await saleService.getSalesByCPF("11144477735");
+
+      expect(salesWithDots).toHaveLength(1);
+      expect(salesWithoutDots).toHaveLength(1);
+      expect(salesWithDots[0].customerName).toBe("Ana Paula");
+      expect(salesWithoutDots[0].customerName).toBe("Ana Paula");
     });
   });
 });
