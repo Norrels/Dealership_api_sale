@@ -31,7 +31,7 @@ export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
     );
 
     try {
-      const response = await fetch(`http://localhost:3000/vehicles/${id}`);
+      const response = await fetch(`${config.VEHICLE_SERVICE_URL}/${id}`);
 
       if (!response.ok) {
         if (response.status === 404) {
