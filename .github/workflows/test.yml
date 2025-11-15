@@ -47,7 +47,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://test_user:test_password@localhost:5432/soat_test
           LOG_LEVEL: silent
-          WEBHOOK_URL: http://localhost:3000/vehicles/webhook
+          VEHICLE_SERVICE_URL: http://localhost:3000/api/v1/vehicles
         run: bun run test:ci
 
       - name: Upload coverage reports

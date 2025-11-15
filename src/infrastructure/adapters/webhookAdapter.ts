@@ -3,7 +3,7 @@ import { logger } from "../../config/logger";
 import { config } from "../../config/env";
 
 export class WebhookAdapter implements WebhookPort {
-  private readonly WEBHOOK_URL = config.WEBHOOK_URL;
+  private readonly WEBHOOK_URL = `${config.VEHICLE_SERVICE_URL}/webhook`;
 
   async notifyVehicleStatusChange(
     vehicleId: string,
