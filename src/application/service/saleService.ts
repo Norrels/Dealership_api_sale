@@ -86,7 +86,8 @@ export class SaleService {
     await this.webhookPort.notifyVehicleStatusChange(vehicle.id, "sold");
   }
 
-  async getAllVehiclesSold(): Promise<Vehicle[]> {
-    return await this.saleRepository.getAllVehicleSales();
+  async getAllVehiclesSold(sortByPrice?: "asc" | "desc"): Promise<Vehicle[]> {
+    const vehicles = await this.saleRepository.getAllVehicleSales(sortByPrice);
+    return vehicles;
   }
 }

@@ -4,7 +4,7 @@ import { Vehicle } from "../../domain/models/vehicle";
 import { SaleRepository } from "../../domain/ports/out/saleRepositoryPort";
 import { db } from "../database";
 import { saleSchema } from "../database/schemas/sale";
-import { eq } from "drizzle-orm";
+import { eq, asc, desc } from "drizzle-orm";
 
 export class SaleRepositoryAdapter implements SaleRepository {
   async createSale(saleData: Sale): Promise<void> {
@@ -14,8 +14,8 @@ export class SaleRepositoryAdapter implements SaleRepository {
     });
   }
 
-  async getAllVehicleSales(): Promise<Vehicle[]> {
-    return await db
+  async getAllVehicleSales(sortByPrice?: "asc" | "desc"): Promise<Vehicle[]> {
+    let query = db
       .select({
         id: saleSchema.id,
         vehicleId: saleSchema.vehicleId,
@@ -29,6 +29,14 @@ export class SaleRepositoryAdapter implements SaleRepository {
         price: saleSchema.price,
       })
       .from(saleSchema);
+
+    if (sortByPrice === "asc") {
+      query = query.orderBy(asc(saleSchema.price));
+    } else if (sortByPrice === "desc") {
+      query = query.orderBy(desc(saleSchema.price));
+    }
+
+    return await query;
   }
 
   async findSaleByVin(vin: string): Promise<Sale | undefined> {

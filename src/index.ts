@@ -1,4 +1,4 @@
-import { Elysia } from "elysia";
+import { Elysia, t } from "elysia";
 import { VehicleService } from "./application/service/vehicleService";
 import { VehicleRepositoryAdapter } from "./infrastructure/adapters/vehicleRepositoryAdapter";
 import { WebhookAdapter } from "./infrastructure/adapters/webhookAdapter";
@@ -47,12 +47,13 @@ const app = new Elysia()
       )
       .get(
         "/available",
-        async () => {
+        async ({ query }) => {
           try {
             logger.info("Requisição recebida para buscar veículos disponíveis");
-            const vehicles = await vehicleService.getAllAvailableVehicles();
+            const sortByPrice = query.sortByPrice as "asc" | "desc" | undefined;
+            const vehicles = await vehicleService.getAllAvailableVehicles(sortByPrice);
             logger.info(
-              { count: vehicles.length },
+              { count: vehicles.length, sortByPrice },
               "Veículos retornados com sucesso"
             );
             return {
@@ -69,23 +70,30 @@ const app = new Elysia()
           }
         },
         {
+          query: t.Object({
+            sortByPrice: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
+          }),
           detail: {
             tags: ["Vehicles"],
             summary: "Get all available vehicles",
-            description: "Returns a list of all available vehicles for sale",
+            description: "Returns a list of all available vehicles for sale. Use sortByPrice=asc for cheapest first or sortByPrice=desc for most expensive first.",
           },
         }
       )
       .get(
         "/sold",
-        async () => {
-          return await saleService.getAllVehiclesSold();
+        async ({ query }) => {
+          const sortByPrice = query.sortByPrice as "asc" | "desc" | undefined;
+          return await saleService.getAllVehiclesSold(sortByPrice);
         },
         {
+          query: t.Object({
+            sortByPrice: t.Optional(t.Union([t.Literal("asc"), t.Literal("desc")])),
+          }),
           detail: {
             tags: ["Vehicles"],
             summary: "Get all sold vehicles",
-            description: "Returns a list of all sold vehicles",
+            description: "Returns a list of all sold vehicles. Use sortByPrice=asc for cheapest first or sortByPrice=desc for most expensive first.",
           },
         }
       )

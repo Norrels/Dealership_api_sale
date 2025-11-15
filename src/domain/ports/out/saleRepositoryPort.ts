@@ -3,6 +3,6 @@ import { Vehicle } from "../../models/vehicle";
 
 export interface SaleRepository {
   createSale(sale: Sale): Promise<void>;
-  getAllVehicleSales(): Promise<Vehicle[]>;
+  getAllVehicleSales(sortByPrice?: "asc" | "desc"): Promise<Vehicle[]>;
   findSaleByVin(vin: string): Promise<Sale | undefined>;
 }
