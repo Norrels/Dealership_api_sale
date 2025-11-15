@@ -1,12 +1,13 @@
 import { VehicleRepositoryPort } from "../../domain/ports/out/vehicleRepositoryPort";
 import { Vehicle, VehicleResponse } from "../../domain/models/vehicle";
 import { logger } from "../../config/logger";
+import { config } from "../../config/env";
 
 export class VehicleRepositoryAdapter implements VehicleRepositoryPort {
   private cache: Map<string, VehicleResponse> = new Map();
   private cacheTimestamp: number = 0;
   private readonly CACHE_TTL = 5 * 60 * 1000;
-  private readonly API_URL = "http://localhost:3000/vehicles?isSold=false";
+  private readonly API_URL = config.VEHICLE_SERVICE_URL + "?isSold=false";
 
   async getAllAvailableVehicles(): Promise<VehicleResponse[]> {
     const now = Date.now();
