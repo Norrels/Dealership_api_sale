@@ -3,7 +3,6 @@ import { VehicleService } from "./vehicleService";
 import { VehicleRepositoryAdapter } from "../../infrastructure/adapters/vehicleRepositoryAdapter";
 import { VehicleResponse } from "../../domain/models/vehicle";
 
-
 describe("VehicleService - Integration Tests", () => {
   let vehicleService: VehicleService;
   let vehicleRepository: VehicleRepositoryAdapter;
@@ -209,9 +208,9 @@ describe("VehicleService - Integration Tests", () => {
         throw new Error("Network timeout");
       }) as any;
 
-      expect(vehicleService.getVehicleById("vehicle-net-error")).rejects.toThrow(
-        "Network timeout"
-      );
+      expect(
+        vehicleService.getVehicleById("vehicle-net-error")
+      ).rejects.toThrow("Network timeout");
     });
   });
 
@@ -378,7 +377,7 @@ describe("VehicleService - Integration Tests", () => {
       ];
 
       global.fetch = (async (url: string) => {
-        if (url.includes("isSold=false")) {
+        if (url.includes("status=available")) {
           return {
             ok: true,
             json: async () => availableVehicles,

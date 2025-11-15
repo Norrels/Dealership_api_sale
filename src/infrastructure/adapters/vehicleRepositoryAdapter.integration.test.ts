@@ -34,7 +34,7 @@ describe("VehicleRepositoryAdapter - Integration Tests", () => {
       let fetchCallCount = 0;
       global.fetch = (async (url: string) => {
         fetchCallCount++;
-        if (url.includes("isSold=false")) {
+        if (url.includes("status=available")) {
           return {
             ok: true,
             json: async () => mockVehicles,
