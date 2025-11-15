@@ -22,4 +22,5 @@ export const saleSchema = pgTable("sale_table", {
   color: varchar().notNull(),
   saleDate: timestamp("sale_date").notNull().defaultNow(),
   price: numeric("sale_price", { precision: 10, scale: 2 }).notNull(),
+  status: varchar({ length: 20 }).notNull().default("pending"),
 });
