@@ -7,6 +7,7 @@ API RESTful para gerenciamento de vendas de veículos construída com princípio
 Este projeto segue os princípios da Clean Architecture com clara separação de responsabilidades em três camadas principais:
 
 ### Camada de Domínio
+
 A camada mais interna contendo a lógica de negócio e regras empresariais.
 
 - **Entidades**: Objetos de negócio fundamentais (`Sale`, `Vehicle`)
@@ -14,12 +15,14 @@ A camada mais interna contendo a lógica de negócio e regras empresariais.
 - **Portas**: Interfaces definindo contratos para dependências externas (`SaleRepositoryPort`, `VehicleRepositoryPort`, `WebhookPort`)
 
 ### Camada de Aplicação
+
 Orquestra o fluxo de dados e implementa os casos de uso.
 
 - **Serviços**: Implementação da lógica de negócio (`SaleService`, `VehicleService`)
 - **DTOs**: Objetos de transferência de dados para validação de requisições/respostas (`CreateSaleDTO`)
 
 ### Camada de Infraestrutura
+
 Lida com preocupações externas e detalhes técnicos.
 
 - **Banco de Dados**: Integração PostgreSQL via Drizzle ORM
@@ -84,16 +87,20 @@ src/
 ## Padrões de Design
 
 ### Arquitetura Hexagonal (Portas e Adaptadores)
+
 - **Portas**: Definidas em `domain/ports` como interfaces
 - **Adaptadores**: Implementados em `infrastructure/adapters` para sistemas externos
 
 ### Padrão Repository
+
 Abstrai o acesso a dados através de interfaces, permitindo que a camada de domínio permaneça independente dos detalhes de persistência.
 
 ### Value Objects
+
 Objetos imutáveis que encapsulam validações e regras de negócio específicas (exemplo: validação de CPF brasileiro).
 
 ### Injeção de Dependência
+
 Os serviços recebem suas dependências através de injeção no construtor, permitindo baixo acoplamento e testabilidade.
 
 ## Endpoints da API
@@ -103,12 +110,16 @@ Os serviços recebem suas dependências através de injeção no construtor, per
 - `POST /api/v1/sales/` - Criar uma nova venda
 - `GET /api/v1/sales/sold` - Listar todos os veículos vendidos
 - `GET /api/v1/sales/available` - Listar veículos disponíveis para venda
-- `GET /api/v1/sales/health` - Health check do serviço
+
+### Monitoramento
+
+- `GET /health` - Health check do serviço
 
 ### Documentação OpenAPI
 
 Documentação interativa da API disponível nos endpoints:
-- `/api/v1/sales/openapi` - Especificação OpenAPI
+
+- `GET /openapi` - Especificação OpenAPI
 
 ## Configuração de Ambiente
 
@@ -116,7 +127,7 @@ Variáveis de ambiente necessárias:
 
 ```bash
 DATABASE_URL=postgresql://user:pass@host:5432/db
-WEBHOOK_URL=http://localhost:3000/vehicles/webhook
+VEHICLE_SERVICE_URL=http://localhost:3000/api/v1/vehicles
 PORT=3001
 LOG_LEVEL=info  # debug | info | warn | error | silent
 ```
@@ -140,6 +151,7 @@ bun run db:push         # Aplicar mudanças de schema no banco
 ## Decisões Arquiteturais
 
 ### Cache de Veículos
+
 O `VehicleRepositoryAdapter` implementa cache local em memória para otimizar consultas:
 
 - Cache atualizado a cada requisição bem-sucedida à API externa
@@ -148,6 +160,7 @@ O `VehicleRepositoryAdapter` implementa cache local em memória para otimizar co
 **Trade-off**: Performance sobre escalabilidade (irei migrar para o redis).
 
 ### Estratégia de Testes
+
 O projeto utiliza uma abordagem focada em testes de integração com implementações reais:
 
 Minimiza o uso de mocks, priorizando testes que validam comportamento end-to-end.
@@ -155,22 +168,25 @@ Minimiza o uso de mocks, priorizando testes que validam comportamento end-to-end
 ## Garantia de Qualidade
 
 ### Qualidade do Código
+
 - TypeScript em modo strict habilitado
 - Segurança de tipos abrangente
 - Formatação consistente de código
 - Cobertura de testes: 86% de funções, 94.52% de linhas
 
 ### Logging
+
 - Logging JSON estruturado via Pino
 - Contexto relevante em cada log (IDs, status, metadata)
 - Diferentes níveis de log por ambiente
 - LOG_LEVEL=silent para execução de testes
 
 ### CI/CD
+
 Pipeline automatizado via GitHub Actions:
+
 1. PostgreSQL service container
 2. Instalação de dependências
 3. Sincronização do schema do banco
 4. Execução de testes com coverage
 5. Validação em branches main e development
-

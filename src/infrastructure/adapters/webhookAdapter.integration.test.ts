@@ -9,16 +9,16 @@ describe("WebhookAdapter - Integration Tests", () => {
 
   beforeEach(() => {
     originalFetch = global.fetch;
-    originalEnv = config.WEBHOOK_URL;
+    originalEnv = config.VEHICLE_SERVICE_URL;
     webhookAdapter = new WebhookAdapter();
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
     if (originalEnv) {
-      process.env.WEBHOOK_URL = originalEnv;
+      process.env.VEHICLE_SERVICE_URL = originalEnv;
     } else {
-      delete process.env.WEBHOOK_URL;
+      delete process.env.VEHICLE_SERVICE_URL;
     }
   });
 
@@ -30,7 +30,7 @@ describe("WebhookAdapter - Integration Tests", () => {
         const body = JSON.parse(options.body);
         capturedRequest = body;
 
-        expect(url).toBe("http://localhost:3000/vehicles/webhook");
+        expect(url).toBe("http://localhost:3000/api/v1/vehicles/webhook");
         expect(options.method).toBe("POST");
         expect(options.headers["Content-Type"]).toBe("application/json");
 
@@ -165,7 +165,7 @@ describe("WebhookAdapter - Integration Tests", () => {
 
   describe("Configuração de URL do Webhook", () => {
     test("deve usar URL padrão quando não configurada", async () => {
-      delete process.env.WEBHOOK_URL;
+      delete process.env.VEHICLE_SERVICE_URL;
 
       let capturedUrl: string | undefined;
       global.fetch = (async (url: string) => {
@@ -180,12 +180,12 @@ describe("WebhookAdapter - Integration Tests", () => {
       const adapter = new WebhookAdapter();
       await adapter.notifyVehicleStatusChange("vehicle-default", "sold");
 
-      expect(capturedUrl).toBe("http://localhost:3000/vehicles/webhook");
+      expect(capturedUrl).toBe("http://localhost:3000/api/v1/vehicles/webhook");
     });
 
     test("deve usar URL customizada quando configurada", async () => {
-      const customUrl = "http://custom-webhook.com/notify";
-      config.WEBHOOK_URL = customUrl;
+      const customUrl = "http://custom-webhook.com/api";
+      config.VEHICLE_SERVICE_URL = customUrl;
 
       let capturedUrl: string | undefined;
       global.fetch = (async (url: string) => {
@@ -200,7 +200,7 @@ describe("WebhookAdapter - Integration Tests", () => {
       const adapter = new WebhookAdapter();
       await adapter.notifyVehicleStatusChange("vehicle-custom", "sold");
 
-      expect(capturedUrl).toBe(customUrl);
+      expect(capturedUrl).toBe(`${customUrl}/webhook`);
     });
   });
 
@@ -377,9 +377,9 @@ describe("WebhookAdapter - Integration Tests", () => {
       }) as any;
 
       await webhookAdapter.notifyVehicleStatusChange("vehicle-1", "sold");
-      await webhookAdapter.notifyVehicleStatusChange("vehicle-2", "sold"); 
-      await webhookAdapter.notifyVehicleStatusChange("vehicle-3", "sold"); 
-      await webhookAdapter.notifyVehicleStatusChange("vehicle-4", "sold"); 
+      await webhookAdapter.notifyVehicleStatusChange("vehicle-2", "sold");
+      await webhookAdapter.notifyVehicleStatusChange("vehicle-3", "sold");
+      await webhookAdapter.notifyVehicleStatusChange("vehicle-4", "sold");
 
       expect(callCount).toBe(4);
       expect(successfulRequests).toEqual(["vehicle-2", "vehicle-4"]);

@@ -5,7 +5,6 @@ const envSchema = z.object({
   LOG_LEVEL: z
     .enum(["debug", "info", "warn", "error", "silent"])
     .default("info"),
-  WEBHOOK_URL: z.url().default("http://localhost:3000/api/v1/vehicles/webhook"),
   VEHICLE_SERVICE_URL: z.url().default("http://localhost:3000/api/v1/vehicles"),
 });
 
