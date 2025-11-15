@@ -72,7 +72,7 @@ export class SaleService {
       make: vehicle.make,
       model: vehicle.model,
       year: vehicle.year,
-      status: "completed",
+      status: "pending",
       vin: vehicle.vin,
       color: vehicle.color,
       saleDate: new Date(),
@@ -81,13 +81,69 @@ export class SaleService {
 
     await this.saleRepository.createSale(sale);
 
-    logger.info("Venda criada com sucesso");
+    logger.info(
+      { saleId: sale.id, status: sale.status },
+      "Venda criada com sucesso com status pendente. Aguardando confirmação de pagamento."
+    );
+  }
 
-    await this.webhookPort.notifyVehicleStatusChange(vehicle.id, "sold");
+  async processPayment(saleId: string, paymentStatus: "approved" | "rejected"): Promise<void> {
+    logger.info(
+      { saleId, paymentStatus },
+      "Processando webhook de pagamento"
+    );
+
+    const sale = await this.saleRepository.findSaleById(saleId);
+
+    if (!sale) {
+      logger.error({ saleId }, "Venda não encontrada");
+      throw new Error("Venda não encontrada");
+    }
+
+    if (sale.status !== "pending") {
+      logger.warn(
+        { saleId, currentStatus: sale.status },
+        "Venda não está com status pendente. Ignorando webhook."
+      );
+      throw new Error(`Venda já foi processada com status: ${sale.status}`);
+    }
+
+    if (paymentStatus === "approved") {
+      await this.saleRepository.updateSaleStatus(saleId, "completed");
+      logger.info({ saleId }, "Pagamento aprovado. Status atualizado para completed.");
+
+      // Notifica o serviço de veículos que o veículo foi vendido
+      await this.webhookPort.notifyVehicleStatusChange(sale.vehicleId, "sold");
+      logger.info(
+        { saleId, vehicleId: sale.vehicleId },
+        "Webhook do serviço de veículos notificado com sucesso"
+      );
+    } else {
+      await this.saleRepository.updateSaleStatus(saleId, "canceled");
+      logger.info({ saleId }, "Pagamento rejeitado. Status atualizado para canceled.");
+    }
   }
 
   async getAllVehiclesSold(sortByPrice?: "asc" | "desc"): Promise<Vehicle[]> {
     const vehicles = await this.saleRepository.getAllVehicleSales(sortByPrice);
     return vehicles;
+  }
+
+  async getSalesByCPF(cpf: string): Promise<Sale[]> {
+    logger.info({ cpf }, "Buscando vendas por CPF");
+
+    const normalizedCPF = cpf.replace(/[^\d]/g, "");
+
+    try {
+      new CPF(normalizedCPF);
+    } catch (error) {
+      logger.error({ cpf, normalizedCPF }, "CPF inválido fornecido para busca");
+      throw new Error("CPF inválido");
+    }
+
+    const sales = await this.saleRepository.findSalesByCPF(normalizedCPF);
+    logger.info({ cpf, count: sales.length }, "Vendas encontradas");
+
+    return sales;
   }
 }

@@ -215,6 +215,143 @@ describe("VehicleService - Integration Tests", () => {
     });
   });
 
+  describe("Ordenação por preço", () => {
+    test("deve ordenar veículos por preço crescente (asc)", async () => {
+      const mockVehicles: VehicleResponse[] = [
+        {
+          id: "vehicle-1",
+          make: "Toyota",
+          model: "Corolla",
+          year: 2023,
+          vin: "VIN1",
+          price: "50000.00",
+          color: "Silver",
+          status: "available",
+        },
+        {
+          id: "vehicle-2",
+          make: "Honda",
+          model: "Civic",
+          year: 2024,
+          vin: "VIN2",
+          price: "30000.00",
+          color: "Blue",
+          status: "available",
+        },
+        {
+          id: "vehicle-3",
+          make: "Ford",
+          model: "Focus",
+          year: 2024,
+          vin: "VIN3",
+          price: "40000.00",
+          color: "Red",
+          status: "available",
+        },
+      ];
+
+      global.fetch = (async () => ({
+        ok: true,
+        json: async () => mockVehicles,
+      })) as any;
+
+      const result = await vehicleService.getAllAvailableVehicles("asc");
+
+      expect(result).toHaveLength(3);
+      expect(result[0].price).toBe("30000.00"); // Honda
+      expect(result[1].price).toBe("40000.00"); // Ford
+      expect(result[2].price).toBe("50000.00"); // Toyota
+      expect(result[0].make).toBe("Honda");
+      expect(result[2].make).toBe("Toyota");
+    });
+
+    test("deve ordenar veículos por preço decrescente (desc)", async () => {
+      const mockVehicles: VehicleResponse[] = [
+        {
+          id: "vehicle-1",
+          make: "Toyota",
+          model: "Corolla",
+          year: 2023,
+          vin: "VIN1",
+          price: "30000.00",
+          color: "Silver",
+          status: "available",
+        },
+        {
+          id: "vehicle-2",
+          make: "Honda",
+          model: "Civic",
+          year: 2024,
+          vin: "VIN2",
+          price: "50000.00",
+          color: "Blue",
+          status: "available",
+        },
+        {
+          id: "vehicle-3",
+          make: "Ford",
+          model: "Focus",
+          year: 2024,
+          vin: "VIN3",
+          price: "40000.00",
+          color: "Red",
+          status: "available",
+        },
+      ];
+
+      global.fetch = (async () => ({
+        ok: true,
+        json: async () => mockVehicles,
+      })) as any;
+
+      const result = await vehicleService.getAllAvailableVehicles("desc");
+
+      expect(result).toHaveLength(3);
+      expect(result[0].price).toBe("50000.00"); // Honda
+      expect(result[1].price).toBe("40000.00"); // Ford
+      expect(result[2].price).toBe("30000.00"); // Toyota
+      expect(result[0].make).toBe("Honda");
+      expect(result[2].make).toBe("Toyota");
+    });
+
+    test("deve retornar veículos sem ordenação quando sortByPrice não for fornecido", async () => {
+      const mockVehicles: VehicleResponse[] = [
+        {
+          id: "vehicle-1",
+          make: "Toyota",
+          model: "Corolla",
+          year: 2023,
+          vin: "VIN1",
+          price: "50000.00",
+          color: "Silver",
+          status: "available",
+        },
+        {
+          id: "vehicle-2",
+          make: "Honda",
+          model: "Civic",
+          year: 2024,
+          vin: "VIN2",
+          price: "30000.00",
+          color: "Blue",
+          status: "available",
+        },
+      ];
+
+      global.fetch = (async () => ({
+        ok: true,
+        json: async () => mockVehicles,
+      })) as any;
+
+      const result = await vehicleService.getAllAvailableVehicles();
+
+      expect(result).toHaveLength(2);
+      // Deve manter ordem original
+      expect(result[0].make).toBe("Toyota");
+      expect(result[1].make).toBe("Honda");
+    });
+  });
+
   describe("Integração completa", () => {
     test("deve funcionar em cenário real com múltiplas operações", async () => {
       const availableVehicles: VehicleResponse[] = [
